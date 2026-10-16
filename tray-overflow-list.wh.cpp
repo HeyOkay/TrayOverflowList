@@ -2,7 +2,7 @@
 // @id tray-overflow-list
 // @name Tray Overflow List
 // @description Hidden tray icons in a list with application names
-// @version 0.1.8.3
+// @version 0.1.8.6
 // @author Local custom mod
 // @include explorer.exe
 // @architecture x86-64
@@ -17,6 +17,8 @@ Experimental list layout for Windows 11 build 26300.
 Preserves existing flyout background and measured width.
 Uses real NotifyIconView controls for clicks and context menus.
 Long names use ellipsis. Disable other tray geometry mods while testing.
+Removes configurable technical suffixes from the displayed name only.
+The original Windows name source and icon controls are preserved.
 */
 // ==/WindhawkModReadme==
 // ==WindhawkModSettings==
@@ -24,6 +26,9 @@ Long names use ellipsis. Disable other tray geometry mods while testing.
 - rowHeight: 33
   $name: Row height (px)
   $description: Height of each row. 0 keeps the native height. Reopen the hidden icons flyout to apply.
+- hiddenNameSuffixes: .Root, .App, .Runner
+  $name: Hidden name suffixes
+  $description: Comma-separated endings to hide from tray labels (case-insensitive). Only complete endings are removed. Leave empty to keep original names. Reopen the flyout to apply.
 */
 // ==/WindhawkModSettings==
 #include <windhawk_utils.h>
@@ -51,6 +56,10 @@ std::atomic<DWORD> g_overflowThreadId;
 // Fixed to the verified installation setting; not user configurable.
 constexpr int kRightAdjust=1;
 std::atomic<int> g_rowHeight{33};
+using NameSuffixList=std::vector<std::wstring>;
+std::shared_ptr<const NameSuffixList> g_nameSuffixes=
+    std::make_shared<const NameSuffixList>(NameSuffixList{L".Root",L".App",L".Runner"});
+std::atomic<unsigned long> g_nameSettingsRevision{0};
 
 
 std::wstring Trim(std::wstring_view s) {
@@ -63,6 +72,51 @@ std::wstring Trim(std::wstring_view s) {
         end--;
     }
     return std::wstring(s.substr(begin, end - begin));
+}
+
+// Only remove explicit dot-delimited suffixes at the end. Never infer
+// word boundaries, strip arbitrary extensions, or return an empty label.
+NameSuffixList ParseNameSuffixes(std::wstring_view text) {
+    NameSuffixList result;
+    size_t begin=0;
+    while(begin<=text.size()) {
+        size_t end=text.find_first_of(L",;\r\n",begin);
+        if(end==std::wstring_view::npos) end=text.size();
+        auto suffix=Trim(text.substr(begin,end-begin));
+        if(!suffix.empty()) {
+            if(suffix.front()!=L'.') suffix.insert(suffix.begin(),L'.');
+            if(suffix.size()>1 && suffix.find_first_of(L" \t") == std::wstring::npos)
+                result.push_back(std::move(suffix));
+        }
+        if(end==text.size()) break;
+        begin=end+1;
+    }
+    // Prefer a complete multi-part ending if the user configured overlapping ones.
+    std::stable_sort(result.begin(),result.end(),[](auto const& a,auto const& b) { return a.size()>b.size(); });
+    return result;
+}
+std::wstring StripNameSuffixes(std::wstring name, NameSuffixList const& suffixes) {
+    bool removed;
+    do {
+        removed=false;
+        for(auto const& suffix:suffixes) {
+            if(suffix.size()<2 || suffix.front()!=L'.' || name.size()<=suffix.size()) continue;
+            auto tail=name.data()+name.size()-suffix.size();
+            if(CompareStringOrdinal(tail,static_cast<int>(suffix.size()),
+                                    suffix.data(),static_cast<int>(suffix.size()),TRUE)==CSTR_EQUAL) {
+                auto candidate=Trim(std::wstring_view(name.data(),name.size()-suffix.size()));
+                if(candidate.empty()) continue;
+                name=std::move(candidate);
+                removed=true;
+                break;
+            }
+        }
+    } while(removed);
+    return name;
+}
+std::wstring CleanTrayName(std::wstring name) {
+    auto suffixes=std::atomic_load(&g_nameSuffixes);
+    return suffixes?StripNameSuffixes(std::move(name),*suffixes):name;
 }
 
 // Tooltips can contain line breaks and repeated spaces; collapse them so that
@@ -393,6 +447,7 @@ void Visit(State& s, DependencyObject const& obj) {
         if(!grid.Children().IndexOf(label,labelIndex)) grid.Children().Append(label);
         IconInfo info; info.viewModel=fe.DataContext(); ReadIconInfo(info);
         std::wstring name=info.appName.empty() ? (info.name.empty()?info.toolTip:info.name):info.appName;
+        name=CleanTrayName(std::move(name));
         if(name.empty()) name=L"Приложение";
         if(label.Text()!=name) label.Text(name);
         return;
@@ -429,7 +484,8 @@ std::wstring LayoutSignature(State& s) {
         sig+=L'|';
         double w=s.scroll ? s.scroll.ViewportWidth() : s.items.ActualWidth();
         sig+=std::to_wstring((int)std::lround(w*10)); sig+=L'|';
-        sig+=std::to_wstring(g_rowHeight.load());
+        sig+=std::to_wstring(g_rowHeight.load()); sig+=L'|';
+        sig+=std::to_wstring(g_nameSettingsRevision.load());
         AppendRowSignature(s,s.items,sig);
     } catch(...) {}
     return sig;
@@ -860,6 +916,12 @@ HMODULE WINAPI LoadLibraryExW_Hook(LPCWSTR lpLibFileName,
 
 void LoadSettings() {
     g_rowHeight=Wh_GetIntSetting(L"rowHeight");
+    PCWSTR raw=Wh_GetStringSetting(L"hiddenNameSuffixes");
+    std::wstring text=raw?raw:L"";
+    Wh_FreeStringSetting(raw);
+    auto parsed=std::make_shared<const NameSuffixList>(ParseNameSuffixes(text));
+    std::atomic_store(&g_nameSuffixes,std::move(parsed));
+    ++g_nameSettingsRevision;
     Wh_Log(L"Settings: rowHeight=%d",g_rowHeight.load());
 }
 

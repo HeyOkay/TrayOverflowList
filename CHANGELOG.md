@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.8.6
+
+- Add configurable, case-insensitive removal of `.Root`, `.App`, and `.Runner` at the end of tray labels.
+- Keep the existing Windows name source; preserve internal dots and unknown endings.
+- Allow an empty suffix setting to disable name cleanup.
+- Keep right edge correction fixed at 1 px and the default row height at 33 px.
+- Exclude intermediate diagnostic builds and EXE metadata collection from the release.
+- Tested and confirmed working by the user on 2026-10-17.
+
 ## 0.1.8.3
 
 - Tested and confirmed working by the user on 2026-10-17.
