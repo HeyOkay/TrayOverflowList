@@ -1,0 +1,21 @@
+# Local editors and operating system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Build output and diagnostics
+build/
+*.dll
+*.obj
+*.o
+*.pdb
+*.log
+*.etl
+
+# Scratch files and local backups
+work/
+*.bak
+*.tmp
+*~
