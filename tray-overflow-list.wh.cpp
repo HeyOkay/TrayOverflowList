@@ -16,7 +16,7 @@
 /*
 # TrayOverflowList
 
-![TrayOverflowList preview](https://raw.githubusercontent.com/HeyOkay/TrayOverflowList/main/images/preview.png)
+![TrayOverflowList preview](https://raw.githubusercontent.com/HeyOkay/TrayOverflowList/main/docs/images/preview.png)
 
 Displays hidden Windows 11 tray icons as a vertical list with application names.
 Tested on Windows 11 build 26300.9457 (x64).
