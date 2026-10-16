@@ -2,7 +2,7 @@
 
 A Windhawk mod that displays the Windows 11 hidden tray icons as a vertical list, with icons on the left and application names on the right.
 
-**Release version: 0.1.8.3** · [Русская инструкция](README.ru.md)
+**Stable version: 0.1.8.3** · [Русская инструкция](README.ru.md)
 
 ## Features
 
@@ -15,7 +15,7 @@ A Windhawk mod that displays the Windows 11 hidden tray icons as a vertical list
 
 ## Compatibility
 
-Tested by the user on Windows 11 26H2, build **26300.9457**, x64, with the Windows interface in English. Version 0.1.8.2 has been confirmed stable by the user.
+Tested by the user on Windows 11 26H2, build **26300.9457**, x64, with the Windows interface in English. Version 0.1.8.3 has been tested and confirmed working by the user on 2026-10-17.
 
 This mod uses internal Windows tray interfaces. Compatibility with other builds and display languages has not been verified. It cannot be guaranteed after Windows updates.
 
@@ -46,7 +46,7 @@ When reporting a problem, include the mod version, Windows build, display scalin
 
 ## Source and validation
 
-The repository contains one release source file. Version 0.1.8.3 is based on the user's confirmed stable 0.1.8.2. The release hides the right edge correction setting and fixes it at the installed value of 1 px. The default row height is now 33 px, matching the installed setting; row height remains configurable. The new release has not yet been runtime-tested separately.
+The repository contains one release source file. Version 0.1.8.3 is based on the user's confirmed stable 0.1.8.2. The release hides the right edge correction setting and fixes it at the installed value of 1 px. The default row height is now 33 px, matching the installed setting; row height remains configurable. Version 0.1.8.3 was subsequently tested and confirmed working by the user on 2026-10-17.
 
 The source passes a syntax check using the locally installed Windhawk compiler. Runtime validation was performed by the user; this is not a claim of automated UI testing or compatibility with all Windows 11 builds.
 

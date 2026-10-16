@@ -2,6 +2,8 @@
 
 ## 0.1.8.3
 
+- Tested and confirmed working by the user on 2026-10-17.
+
 - Remove the right edge correction setting from the settings UI.
 - Fix the correction at 1 px, matching the verified installed value.
 - Set the default row height to 33 px, matching the installed setting; keep it configurable.
