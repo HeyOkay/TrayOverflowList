@@ -4,6 +4,7 @@
 // @description Hidden tray icons in a list with application names
 // @version 0.1.8.6
 // @author Local custom mod
+// @homepage https://github.com/HeyOkay/TrayOverflowList
 // @include explorer.exe
 // @architecture x86-64
 // @compilerOptions -lole32 -loleaut32 -lruntimeobject -lversion
@@ -13,7 +14,13 @@
 // https://github.com/ramensoftware/windhawk-mods/blob/main/mods/system-tray-folders.wh.cpp
 // ==WindhawkModReadme==
 /*
-Experimental list layout for Windows 11 build 26300.
+# TrayOverflowList
+
+![TrayOverflowList preview](https://raw.githubusercontent.com/HeyOkay/TrayOverflowList/main/images/preview.png)
+
+Displays hidden Windows 11 tray icons as a vertical list with application names.
+Tested on Windows 11 build 26300.9457 (x64).
+
 Preserves existing flyout background and measured width.
 Uses real NotifyIconView controls for clicks and context menus.
 Long names use ellipsis. Disable other tray geometry mods while testing.

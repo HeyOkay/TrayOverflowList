@@ -1,4 +1,4 @@
-# Windhawk Tray List
+# TrayOverflowList
 
 A Windhawk mod that displays the Windows 11 hidden tray icons as a vertical list, with icons on the left and application names on the right.
 
