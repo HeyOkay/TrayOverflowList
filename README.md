@@ -4,6 +4,8 @@ A Windhawk mod that displays the Windows 11 hidden tray icons as a vertical list
 
 **Stable version: 0.1.8.6** · [Русская инструкция](README.ru.md)
 
+![Tray icons displayed as a vertical list with application names](images/preview.png)
+
 ## Features
 
 - Uses the original tray icon controls for clicks, context menus, and dragging.
