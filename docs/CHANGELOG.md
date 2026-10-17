@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.8.7
+
+- Track flyout controls, rows, and labels weakly; prune expired entries and replace state for recreated flyouts.
+- Revoke layout handlers before restoring properties; isolate restore failures, retry cleanup on the tray UI thread, and retain the module only if cleanup cannot finish.
+- Reload on settings changes so row height 0 restores native dimensions.
+- Use an English fallback label and remove unused image-source queries.
+- Recalculate scroll height when reopening the flyout.
+- Tested and confirmed working by the user on 2026-10-17.
+
 ## 0.1.8.6
 
 - Add configurable, case-insensitive removal of `.Root`, `.App`, and `.Runner` at the end of tray labels.

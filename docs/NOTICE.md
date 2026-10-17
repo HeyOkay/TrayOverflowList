@@ -1,6 +1,6 @@
 # Attribution
 
-The source identifies this mod as **Tray Overflow List**, by **Local custom mod**, licensed under **GPL-3.0-only**. This existing metadata is preserved; packaging does not assign a new author.
+The source identifies this mod as **Tray Overflow List**, maintained and submitted by **HeyOkay**, licensed under **GPL-3.0-only**. Earlier local versions used the author placeholder "Local custom mod". Existing helper attribution is preserved.
 
 The source credits derived helpers to **Ris Peng's System Tray Folders** and **m417z tray mods**, GPL-3.0-only, and references:
 

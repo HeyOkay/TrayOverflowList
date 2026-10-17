@@ -2,7 +2,7 @@
 
 A Windhawk mod that displays the Windows 11 hidden tray icons as a vertical list, with icons on the left and application names on the right.
 
-**Stable version: 0.1.8.6** · [Русская инструкция](docs/README.ru.md)
+**Stable version: 0.1.8.7** · [Русская инструкция](docs/README.ru.md)
 
 ![Tray icons displayed as a vertical list with application names](docs/images/preview.png)
 
@@ -18,7 +18,7 @@ A Windhawk mod that displays the Windows 11 hidden tray icons as a vertical list
 
 ## Compatibility
 
-Tested by the user on Windows 11 26H2, build **26300.9457**, x64, with the Windows interface in English. Version 0.1.8.6 has been tested and confirmed working by the user on 2026-10-17.
+Tested by the user on Windows 11 26H2, build **26300.9457**, x64, with the Windows interface in English. Version 0.1.8.7 has been tested and confirmed working by the user on 2026-10-17.
 
 This mod uses internal Windows tray interfaces. Compatibility with other builds and display languages has not been verified. It cannot be guaranteed after Windows updates.
 
@@ -38,11 +38,11 @@ To update an existing installation, replace its source with the same file and co
 | `hiddenNameSuffixes` | `.Root, .App, .Runner` | Comma-separated endings to remove from the end of labels, ignoring case. Leave empty to keep original names. |
 | `rowHeight` | `33` | Row height in pixels. `0` keeps the native height. Custom values are applied from `20` upward. |
 
-Close and reopen the flyout after changing settings. For example, `WhatsApp.Root` becomes `WhatsApp`, while `MicaForEveryone.App` becomes `MicaForEveryone`. Internal dots and unlisted endings are preserved. Consecutive listed endings are removed until none remain; the label is never reduced to an empty string.
+Settings changes reload the mod to restore native dimensions first. Reopen the flyout afterward. For example, `WhatsApp.Root` becomes `WhatsApp`, while `MicaForEveryone.App` becomes `MicaForEveryone`. Internal dots and unlisted endings are preserved. Consecutive listed endings are removed until none remain; the label is never reduced to an empty string.
 
 ## Troubleshooting
 
-- **The panel remains narrow after reboot:** check that version 0.1.8.6 is enabled and that there is only one active copy. If it persists, report the Windows build and whether reopening the flyout changes the result.
+- **The panel remains narrow after reboot:** check that version 0.1.8.7 is enabled and that there is only one active copy. If it persists, report the Windows build and whether reopening the flyout changes the result.
 - **Layout or highlight problems:** temporarily disable other mods that alter hidden tray icon geometry and compare the result.
 - **Windows update breaks the mod:** disable it in Windhawk. Restart Explorer if the original panel layout does not return.
 
@@ -50,7 +50,7 @@ When reporting a problem, include the mod version, Windows build, display scalin
 
 ## Source and validation
 
-The repository contains one release source file. Version 0.1.8.6 builds on the user's confirmed stable 0.1.8.3 and adds configurable removal of technical name suffixes. It was tested and confirmed working by the user on 2026-10-17. Right edge correction remains fixed at 1 px and the configurable row height defaults to 33 px. Diagnostic builds and EXE metadata collection are not included.
+The repository contains one release source file. Version 0.1.8.7 was tested and confirmed working by the user on 2026-10-17, including the review fixes for XAML state lifetime, unload cleanup, and native row height restoration. The default row height remains 33 px; technical suffix cleanup is configurable. Diagnostic builds and EXE metadata collection are not included.
 
 The source passes a syntax check using the locally installed Windhawk compiler. Runtime validation was performed by the user; this is not a claim of automated UI testing or compatibility with all Windows 11 builds.
 
