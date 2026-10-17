@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.8.8
+
+- Remove the DLL pin fallback; retain tray-thread cleanup retries without keeping the mod loaded after disabling it.
+- Capture original row properties once, using indexed duplicate checks.
+- Replace per-frame tree scans with event-driven updates and bounded layout follow-ups.
+- Calculate width from the original native grid measurements without temporary reparenting or synchronous layout updates.
+- Revoke collection, row, template, size, scroll, and layout callbacks before restoring native properties.
+- Pass the upstream PR validator, full x64/ARM64 builds, and native/XAML integration checks.
+- Tested and confirmed working by the user on 2026-10-17.
+
 ## 0.1.8.7
 
 - Track flyout controls, rows, and labels weakly; prune expired entries and replace state for recreated flyouts.
