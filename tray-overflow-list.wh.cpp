@@ -8,7 +8,7 @@
 // @homepage https://github.com/HeyOkay/TrayOverflowList
 // @include explorer.exe
 // @architecture x86-64
-// @compilerOptions -lole32 -loleaut32 -lruntimeobject -lversion
+// @compilerOptions -lcomctl32 -lole32 -loleaut32 -lruntimeobject -lversion
 // @license GPL-3.0-only
 // ==/WindhawkMod==
 // Derived helpers: Ris Peng's System Tray Folders and m417z tray mods,
@@ -1150,9 +1150,78 @@ void UpdateScrollHeight(Controls::ScrollViewer const& scroll) {
     if (scroll.MaxHeight() != height)
         scroll.MaxHeight(height);
 }
+// Windows places the overflow flyout for the size of its native grid. The list
+// is usually taller, and the flyout grows from where Windows put it, so next
+// to a vertical taskbar it can run past the bottom of the screen. The flyout
+// window is kept inside the monitor's work area instead.
+constexpr wchar_t kOverflowWindowClass[] = L"TopLevelWindowForOverflowXamlIsland";
+std::atomic<HWND> g_overflowWindow;
+
+LRESULT CALLBACK OverflowWindowSubclassProc(HWND hWnd,
+                                            UINT uMsg,
+                                            WPARAM wParam,
+                                            LPARAM lParam,
+                                            DWORD_PTR) {
+    if (uMsg == WM_WINDOWPOSCHANGING && !g_unloading) {
+        auto* wp = reinterpret_cast<WINDOWPOS*>(lParam);
+        if ((wp->flags & (SWP_NOMOVE | SWP_NOSIZE)) !=
+            (SWP_NOMOVE | SWP_NOSIZE)) {
+            RECT current{};
+            GetWindowRect(hWnd, &current);
+            int x = (wp->flags & SWP_NOMOVE) ? current.left : wp->x;
+            int y = (wp->flags & SWP_NOMOVE) ? current.top : wp->y;
+            int cx = (wp->flags & SWP_NOSIZE) ? current.right - current.left
+                                              : wp->cx;
+            int cy = (wp->flags & SWP_NOSIZE) ? current.bottom - current.top
+                                              : wp->cy;
+            RECT rc{x, y, x + cx, y + cy};
+            MONITORINFO mi{sizeof(mi)};
+            if (cx > 0 && cy > 0 &&
+                GetMonitorInfo(MonitorFromRect(&rc, MONITOR_DEFAULTTONEAREST),
+                               &mi)) {
+                const RECT& work = mi.rcWork;
+                int newY = y;
+                if (newY + cy > work.bottom)
+                    newY = work.bottom - cy;
+                if (newY < work.top)
+                    newY = work.top;
+                if (newY != y) {
+                    wp->x = x;
+                    wp->y = newY;
+                    wp->flags &= ~SWP_NOMOVE;
+                }
+            }
+        }
+    }
+    return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+void AttachOverflowWindow() {
+    HWND hWnd = nullptr;
+    while ((hWnd = FindWindowEx(nullptr, hWnd, kOverflowWindowClass,
+                                nullptr))) {
+        DWORD processId = 0;
+        GetWindowThreadProcessId(hWnd, &processId);
+        if (processId == GetCurrentProcessId())
+            break;
+    }
+    if (!hWnd || g_overflowWindow.load() == hWnd)
+        return;
+    if (WindhawkUtils::SetWindowSubclassFromAnyThread(
+            hWnd, OverflowWindowSubclassProc, 0))
+        g_overflowWindow = hWnd;
+}
+
+void DetachOverflowWindow() {
+    if (HWND hWnd = g_overflowWindow.exchange(nullptr))
+        WindhawkUtils::RemoveWindowSubclassFromAnyThread(
+            hWnd, OverflowWindowSubclassProc);
+}
+
 void Attach(void* manager, Controls::Control const& root) {
     if (!manager || !root || g_unloading)
         return;
+    AttachOverflowWindow();
     DWORD threadId = GetCurrentThreadId();
     DWORD expected = 0;
     if (!g_overflowThreadId.compare_exchange_strong(expected, threadId) &&
@@ -1632,6 +1701,7 @@ void Wh_ModAfterInit() {
 
 void Wh_ModBeforeUninit() {
     g_unloading = true;
+    DetachOverflowWindow();
     if (!g_overflowThreadId.load())
         return;
     auto cleanup = [] {
