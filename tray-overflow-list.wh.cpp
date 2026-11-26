@@ -37,6 +37,11 @@ vertically, and long names are shortened with an ellipsis.
 are removed from the end of labels without regard to case. For example,
   `WhatsApp.Root` becomes `WhatsApp`. Leave the setting empty to keep the
 original names. Dots inside names and unlisted endings are preserved.
+- **Apps listed by tooltip** defaults to `Windhawk mod`. Icons of the listed
+  apps show their tooltip instead of the app name. This is for apps that show
+  several icons under one name: every Windhawk mod that adds a tray icon is
+  named "Windhawk mod". Names are compared without regard to case. Leave the
+  setting empty to always show app names.
 
 Changing settings reloads the mod to restore the native layout first. Reopen
 the flyout to apply the new settings.
@@ -61,6 +66,9 @@ flyout geometry. Disable them when investigating layout problems.
 - hiddenNameSuffixes: .Root, .App, .Runner
   $name: Hidden name suffixes
   $description: Comma-separated endings to hide from tray labels (case-insensitive). Only complete endings are removed. Leave empty to keep original names. Reopen the flyout to apply.
+- tooltipNameApps: Windhawk mod
+  $name: Apps listed by tooltip
+  $description: Comma-separated app names (case-insensitive) whose icons show their tooltip instead, for apps with several icons under one name, such as Windhawk mods. Leave empty to always show app names. Reopen the flyout to apply.
 */
 // ==/WindhawkModSettings==
 // clang-format on
@@ -94,6 +102,7 @@ constexpr int kRightAdjust = 1;
 int g_rowHeight = 33;
 using NameSuffixList = std::vector<std::wstring>;
 NameSuffixList g_nameSuffixes{L".Root", L".App", L".Runner"};
+std::vector<std::wstring> g_tooltipNameApps{L"Windhawk mod"};
 
 std::wstring Trim(std::wstring_view s) {
     size_t begin = 0;
@@ -159,6 +168,30 @@ std::wstring StripNameSuffixes(std::wstring name,
         }
     } while (removed);
     return name;
+}
+std::vector<std::wstring> ParseNameList(std::wstring_view text) {
+    std::vector<std::wstring> result;
+    size_t begin = 0;
+    while (begin <= text.size()) {
+        size_t end = text.find(L',', begin);
+        if (end == std::wstring_view::npos)
+            end = text.size();
+        auto item = Trim(text.substr(begin, end - begin));
+        if (!item.empty())
+            result.push_back(std::move(item));
+        begin = end + 1;
+    }
+    return result;
+}
+bool IsTooltipNameApp(std::wstring_view appName) {
+    for (auto const& app : g_tooltipNameApps) {
+        if (CompareStringOrdinal(app.data(), static_cast<int>(app.size()),
+                                 appName.data(),
+                                 static_cast<int>(appName.size()),
+                                 TRUE) == CSTR_EQUAL)
+            return true;
+    }
+    return false;
 }
 std::wstring CleanTrayName(std::wstring name) {
     return StripNameSuffixes(std::move(name), g_nameSuffixes);
@@ -997,6 +1030,10 @@ void UpdateRow(State& s,
         std::wstring name = info.appName.empty()
                                 ? (info.name.empty() ? info.toolTip : info.name)
                                 : info.appName;
+        // Several icons under one app name are told apart by their tooltip.
+        if (!info.appName.empty() && !info.toolTip.empty() &&
+            IsTooltipNameApp(info.appName))
+            name = info.toolTip;
         name = CleanTrayName(std::move(name));
         if (name.empty())
             name = L"Application";
@@ -1578,6 +1615,8 @@ void LoadSettings() {
     g_rowHeight = Wh_GetIntSetting(L"rowHeight");
     auto text = WindhawkUtils::StringSetting::make(L"hiddenNameSuffixes");
     g_nameSuffixes = ParseNameSuffixes(text.get());
+    auto tooltipApps = WindhawkUtils::StringSetting::make(L"tooltipNameApps");
+    g_tooltipNameApps = ParseNameList(tooltipApps.get());
     Wh_Log(L"Settings: rowHeight=%d", g_rowHeight);
 }
 
